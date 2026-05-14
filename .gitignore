@@ -5,3 +5,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Deployment-only SQL variants (never commit — contain host-specific tweaks)
+database/portfolio_infinityfree.sql
