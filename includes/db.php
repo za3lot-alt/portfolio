@@ -20,10 +20,10 @@ declare(strict_types=1);
 //   DB_NAME = often prefixed with your account
 //   DB_USER, DB_PASS = from cPanel / hosting dashboard
 // ---------------------------------------------------------------------------
-const DB_HOST = 'localhost';
-const DB_NAME = 'portfolio_db';
-const DB_USER = 'root';
-const DB_PASS = '';
+const DB_HOST = 'sql106.infinityfree.com';
+const DB_NAME = 'if0_41917510_portfolio_db';
+const DB_USER = 'if0_41917510';
+const DB_PASS = 'PUT_YOUR_INFINITYFREE_PASSWORD_HERE';
 const DB_CHARSET = 'utf8mb4';
 
 // ---------------------------------------------------------------------------
