@@ -566,7 +566,7 @@
         }
         // ASCII banner regardless
         console.log(
-            '%c\n  ___    ____  \n / _ \\  /  _  \\ \n| |_| ||  |_|  |\n|  _  ||      /\n|_| |_||__|\\__\\\n  AHMED RAHMANI · 22091000408\n  github.com/ahmedrahmani\n',
+            '%c\n  ___    ____  \n / _ \\  /  _  \\ \n| |_| ||  |_|  |\n|  _  ||      /\n|_| |_||__|\\__\\\n  AHMED RAHMANI · 22091000408\n  github.com/za3lot-alt\n',
             'color:#f0b429; font-family:monospace;'
         );
     }
@@ -797,7 +797,7 @@
                 }).catch(e => print('&gt; ERROR: ' + e.message, 'err'));
             },
             contact () {
-                print('&gt; email: <code>hhhf45818@gmail.com</code>');
+                print('&gt; email: <code>22091000408@ogr.halic.edu.tr</code>');
                 print('&gt; or scroll to #contact and use the form.');
             },
             theme () {

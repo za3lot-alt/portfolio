@@ -30,7 +30,7 @@ cd C:\xampp\htdocs
 # (or /Applications/XAMPP/htdocs on macOS, /var/www/html on Linux)
 
 # 2. Drop in the project
-git clone https://github.com/ahmedrahmani/portfolio.git
+git clone https://github.com/za3lot-alt/portfolio.git
 # OR unzip portfolio.zip into htdocs/portfolio/
 
 # 3. Start MySQL (XAMPP control panel) and import the schema
