@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ahmed Rahmani — 4th-year Software Engineering student at Halic University. Quant trader in training, forex automation builder, full-stack developer.">
+    <meta name="author" content="Ahmed Rahmani">
+    <meta name="theme-color" content="#0a0e1a">
+
+    <title>&gt; ahmed_rahmani / portfolio</title>
+
+    <!-- Google Fonts: JetBrains Mono (code/headings) + Syne (body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Inline favicon (terminal prompt) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0e1a'/%3E%3Ctext x='4' y='23' font-family='monospace' font-weight='700' font-size='20' fill='%2300d4ff'%3E%26gt;_%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         BONUS 1 — Live forex ticker (top of page)
+         Fetched from open.er-api.com every 30s by script.js
+         ════════════════════════════════════════════════════════════════ -->
+    <aside class="ticker-bar" id="forex-ticker" aria-label="Live forex rates">
+        <div class="ticker-track">
+            <span class="ticker-item" data-pair="EURUSD"><span class="ticker-label">EUR/USD</span> <span class="ticker-value">--</span></span>
+            <span class="ticker-item" data-pair="GBPUSD"><span class="ticker-label">GBP/USD</span> <span class="ticker-value">--</span></span>
+            <span class="ticker-item" data-pair="USDJPY"><span class="ticker-label">USD/JPY</span> <span class="ticker-value">--</span></span>
+            <span class="ticker-item" data-pair="USDTRY"><span class="ticker-label">USD/TRY</span> <span class="ticker-value">--</span></span>
+            <span class="ticker-item" data-pair="BTCUSD"><span class="ticker-label">BTC/USD</span> <span class="ticker-value">--</span></span>
+        </div>
+    </aside>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         §1 — NAV
+         ════════════════════════════════════════════════════════════════ -->
+    <header class="site-header" id="site-header">
+        <nav class="nav" aria-label="Primary">
+            <a href="#hero" class="nav-logo">
+                <span class="prompt">&gt;</span><span class="logo-text">AR_</span>
+                <span class="cursor" aria-hidden="true"></span>
+            </a>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#hero"     class="nav-link active">Home</a></li>
+                <li><a href="#about"    class="nav-link">About</a></li>
+                <li><a href="#projects" class="nav-link">Projects</a></li>
+                <li><a href="#skills"   class="nav-link">Skills</a></li>
+                <li><a href="#timeline" class="nav-link">Timeline</a></li>
+                <li><a href="#contact"  class="nav-link">Contact</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
+                    <svg class="icon-sun"  viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                        <circle cx="12" cy="12" r="5" fill="currentColor"/>
+                        <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <line x1="12" y1="1"  x2="12" y2="4"/>
+                            <line x1="12" y1="20" x2="12" y2="23"/>
+                            <line x1="1"  y1="12" x2="4"  y2="12"/>
+                            <line x1="20" y1="12" x2="23" y2="12"/>
+                            <line x1="4.2"  y1="4.2"  x2="6.3"  y2="6.3"/>
+                            <line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/>
+                            <line x1="4.2"  y1="19.8" x2="6.3"  y2="17.7"/>
+                            <line x1="17.7" y1="6.3"  x2="19.8" y2="4.2"/>
+                        </g>
+                    </svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
+                    </svg>
+                </button>
+
+                <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         MAIN
+         ════════════════════════════════════════════════════════════════ -->
+    <main>
+
+        <!-- §2 — HERO ─────────────────────────────────────────────── -->
+        <section id="hero" class="hero">
+            <canvas id="matrix-canvas" class="matrix-canvas" aria-hidden="true"></canvas>
+
+            <div class="hero-content">
+                <p class="hero-tagline"><span class="prompt">&gt;</span> initialising_quant_dev.exe</p>
+
+                <h1 class="hero-title">Ahmed Rahmani</h1>
+
+                <p class="hero-typewriter">
+                    <span id="typewriter-text"></span><span class="cursor cursor-typer" aria-hidden="true"></span>
+                </p>
+
+                <p class="hero-subtitle">
+                    4th-year SE <span class="dim">@</span> Halic University
+                    <span class="sep">·</span>
+                    <span class="mono">22091000408</span>
+                </p>
+
+                <div class="hero-cta">
+                    <a href="#projects" class="btn btn-primary">View Projects <span aria-hidden="true">→</span></a>
+                    <a href="#" class="btn btn-ghost" id="download-cv" data-action="print-cv">Download CV <span aria-hidden="true">↓</span></a>
+                </div>
+            </div>
+
+            <!-- Decorative SVG candlestick chart, animated by script.js -->
+            <figure class="hero-chart" aria-hidden="true">
+                <svg id="candlestick-svg" viewBox="0 0 400 220" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="grid-grad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%"   stop-color="#1e2d4a" stop-opacity="0.6"/>
+                            <stop offset="100%" stop-color="#1e2d4a" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <g id="candlestick-grid"></g>
+                    <g id="candlestick-bars"></g>
+                </svg>
+                <figcaption class="visually-hidden">Animated candlestick chart decoration</figcaption>
+            </figure>
+
+            <a href="#about" class="scroll-indicator" aria-label="Scroll down">
+                <span></span>
+            </a>
+        </section>
+
+        <!-- §3 — ABOUT ────────────────────────────────────────────── -->
+        <section id="about" class="section about">
+            <div class="container">
+                <h2 class="section-title"><span class="prompt">&gt;</span> ABOUT</h2>
+
+                <div class="about-grid">
+                    <figure class="about-photo">
+                        <div class="photo-placeholder">
+                            <span class="photo-initials">AR</span>
+                            <span class="photo-tag">@ahmed_rahmani</span>
+                        </div>
+                        <figcaption>Ahmed Rahmani · Istanbul · 2026</figcaption>
+                    </figure>
+
+                    <div class="about-bio">
+                        <p>
+                            I'm a 4th-year Software Engineering student at <strong>Halic University, Istanbul</strong>. My focus is at the
+                            intersection of <strong>full-stack web development</strong> and <strong>quantitative trading</strong> — building
+                            systems that can be backtested, monitored, and shipped end-to-end.
+                        </p>
+                        <p>
+                            I spend most of my time learning the <strong>QuantConnect LEAN engine</strong>, writing Python strategies on
+                            forex pairs and gold, and walking them through honest out-of-sample validation rather than chasing in-sample
+                            curves. On the application side I work in PHP, JavaScript, MySQL, and increasingly Python — and I'm a committed
+                            <em>vibe coder</em> who treats AI tools (Claude, Copilot) as collaborators rather than oracles.
+                        </p>
+                        <p>
+                            This portfolio is itself a Year-4 deliverable: a single-page application, a session-protected admin dashboard,
+                            and an honest live forex ticker — all built without a framework, on the principle that you should understand
+                            every line you ship.
+                        </p>
+
+                        <blockquote class="motto">
+                            <span class="prompt">&gt;</span> <em>"Discipline beats inspiration, out-of-sample beats backtest, ship beats perfect."</em>
+                        </blockquote>
+                    </div>
+                </div>
+
+                <!-- Fun stats grid (count-up on scroll) -->
+                <div class="stats-grid" aria-label="Fun stats">
+                    <article class="stat-card">
+                        <span class="stat-num" data-count-to="3247">0</span>
+                        <span class="stat-label">Lines of Code <span class="dim">(this site)</span></span>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-num" data-count-to="14">0</span>
+                        <span class="stat-label">Strategies Backtested</span>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-num" data-count-to="847">0</span>
+                        <span class="stat-label">Git Commits</span>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-num" data-count-to="9999" data-suffix="+">0</span>
+                        <span class="stat-label">Coffees Consumed</span>
+                    </article>
+                </div>
+
+                <!-- Academic timeline as HTML table -->
+                <div class="table-wrapper">
+                    <h3 class="subhead"><span class="prompt">&gt;</span> ACADEMIC_TIMELINE</h3>
+                    <table class="academic-table">
+                        <caption class="visually-hidden">Halic University SE curriculum, year by year</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Year</th>
+                                <th scope="col">Focus</th>
+                                <th scope="col">Key Courses</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Year 1 <span class="dim">/ 2022-23</span></th>
+                                <td>Foundations</td>
+                                <td>Intro to Programming · Discrete Math · Calculus I-II · Logic Design</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Year 2 <span class="dim">/ 2023-24</span></th>
+                                <td>Core CS</td>
+                                <td>Data Structures · Object-Oriented Programming · Linear Algebra · Probability &amp; Statistics</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Year 3 <span class="dim">/ 2024-25</span></th>
+                                <td>Software Engineering</td>
+                                <td>Database Systems · Web Programming · Software Engineering · Operating Systems · Algorithms</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Year 4 <span class="dim">/ 2025-26</span></th>
+                                <td>Specialisation</td>
+                                <td>Software Architecture · Project I/II · Machine Learning · Distributed Systems · Senior Design</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- §4 — PROJECTS (AJAX-loaded from /api/projects.php) ───── -->
+        <section id="projects" class="section projects">
+            <div class="container">
+                <h2 class="section-title"><span class="prompt">&gt;</span> PROJECTS</h2>
+                <p class="section-lead">Auto-loaded from <code>/api/projects.php</code> &mdash; managed via the admin dashboard.</p>
+
+                <!-- Skeleton shown while fetching -->
+                <div class="projects-track" id="projects-track">
+                    <article class="project-card skeleton" aria-hidden="true">
+                        <div class="skel-bar skel-w-60"></div>
+                        <div class="skel-bar skel-w-40"></div>
+                        <div class="skel-bar skel-w-90"></div>
+                        <div class="skel-bar skel-w-80"></div>
+                    </article>
+                    <article class="project-card skeleton" aria-hidden="true">
+                        <div class="skel-bar skel-w-60"></div>
+                        <div class="skel-bar skel-w-40"></div>
+                        <div class="skel-bar skel-w-90"></div>
+                        <div class="skel-bar skel-w-80"></div>
+                    </article>
+                    <article class="project-card skeleton" aria-hidden="true">
+                        <div class="skel-bar skel-w-60"></div>
+                        <div class="skel-bar skel-w-40"></div>
+                        <div class="skel-bar skel-w-90"></div>
+                        <div class="skel-bar skel-w-80"></div>
+                    </article>
+                </div>
+
+                <!-- Error state -->
+                <div class="projects-error" id="projects-error" hidden>
+                    <p><span class="prompt">&gt;</span> ERROR: Could not load projects. <button class="btn btn-ghost btn-sm" id="projects-retry">retry</button></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- §5 — SKILLS ──────────────────────────────────────────── -->
+        <section id="skills" class="section skills">
+            <div class="container">
+                <h2 class="section-title"><span class="prompt">&gt;</span> SKILLS</h2>
+
+                <div class="skills-grid">
+                    <article class="skill-group">
+                        <h3>Frontend</h3>
+                        <ul class="skill-list">
+                            <li><span>HTML5</span>      <div class="bar"><div class="fill" data-pct="90"></div></div><span class="pct">90%</span></li>
+                            <li><span>CSS3</span>       <div class="bar"><div class="fill" data-pct="85"></div></div><span class="pct">85%</span></li>
+                            <li><span>JavaScript</span> <div class="bar"><div class="fill" data-pct="80"></div></div><span class="pct">80%</span></li>
+                            <li><span>React</span>      <div class="bar"><div class="fill" data-pct="70"></div></div><span class="pct">70%</span></li>
+                        </ul>
+                    </article>
+
+                    <article class="skill-group">
+                        <h3>Backend</h3>
+                        <ul class="skill-list">
+                            <li><span>PHP</span>        <div class="bar"><div class="fill" data-pct="75"></div></div><span class="pct">75%</span></li>
+                            <li><span>MySQL</span>      <div class="bar"><div class="fill" data-pct="80"></div></div><span class="pct">80%</span></li>
+                            <li><span>Python</span>     <div class="bar"><div class="fill" data-pct="72"></div></div><span class="pct">72%</span></li>
+                            <li><span>REST APIs</span>  <div class="bar"><div class="fill" data-pct="78"></div></div><span class="pct">78%</span></li>
+                        </ul>
+                    </article>
+
+                    <article class="skill-group">
+                        <h3>Tools</h3>
+                        <ul class="skill-list">
+                            <li><span>Git</span>        <div class="bar"><div class="fill" data-pct="88"></div></div><span class="pct">88%</span></li>
+                            <li><span>Docker</span>     <div class="bar"><div class="fill" data-pct="60"></div></div><span class="pct">60%</span></li>
+                            <li><span>Linux</span>      <div class="bar"><div class="fill" data-pct="75"></div></div><span class="pct">75%</span></li>
+                            <li><span>AI Tools</span>   <div class="bar"><div class="fill" data-pct="95"></div></div><span class="pct">95%</span></li>
+                        </ul>
+                    </article>
+
+                    <article class="skill-group">
+                        <h3>Quant</h3>
+                        <ul class="skill-list">
+                            <li><span>QuantConnect</span>   <div class="bar"><div class="fill" data-pct="65"></div></div><span class="pct">65%</span></li>
+                            <li><span>Pandas</span>         <div class="bar"><div class="fill" data-pct="70"></div></div><span class="pct">70%</span></li>
+                            <li><span>Backtesting</span>    <div class="bar"><div class="fill" data-pct="68"></div></div><span class="pct">68%</span></li>
+                            <li><span>Forex Analysis</span> <div class="bar"><div class="fill" data-pct="75"></div></div><span class="pct">75%</span></li>
+                            <li><span>Pine Script</span>    <div class="bar"><div class="fill" data-pct="60"></div></div><span class="pct">60%</span></li>
+                        </ul>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- §6 — TIMELINE ────────────────────────────────────────── -->
+        <section id="timeline" class="section timeline">
+            <div class="container">
+                <h2 class="section-title"><span class="prompt">&gt;</span> TIMELINE</h2>
+
+                <ol class="timeline-list">
+                    <li class="timeline-item left">
+                        <div class="timeline-content">
+                            <span class="timeline-date">2022</span>
+                            <h3>Enrolled at Halic University</h3>
+                            <p>Software Engineering, Istanbul. First exposure to C, Python, and discrete math.</p>
+                        </div>
+                    </li>
+                    <li class="timeline-item right">
+                        <div class="timeline-content">
+                            <span class="timeline-date">2023 · Q1</span>
+                            <h3>First PHP/MySQL web app</h3>
+                            <p>A student grade tracker with role-based access. Refactored years later to use PDO and prepared statements.</p>
+                        </div>
+                    </li>
+                    <li class="timeline-item left">
+                        <div class="timeline-content">
+                            <span class="timeline-date">2023 · Q3</span>
+                            <h3>Discovered algorithmic trading</h3>
+                            <p>Started reading <em>Advances in Financial Machine Learning</em> and signed up for QuantConnect.</p>
+                        </div>
+                    </li>
+                    <li class="timeline-item right">
+                        <div class="timeline-content">
+                            <span class="timeline-date">2024 · Q2</span>
+                            <h3>First backtested forex strategy</h3>
+                            <p>EURUSD H1 moving-average crossover with ATR stops. Walk-forward across 5 years; learned what overfitting looks like.</p>
+                        </div>
+                    </li>
+                    <li class="timeline-item left">
+                        <div class="timeline-content">
+                            <span class="timeline-date">2024 · Q4</span>
+                            <h3>Started vibe coding with AI</h3>
+                            <p>Began pairing with Claude and Copilot on every meaningful project. Treat the model like a strong collaborator, not an oracle.</p>
+                        </div>
+                    </li>
+                    <li class="timeline-item right">
+                        <div class="timeline-content">
+                            <span class="timeline-date">2025</span>
+                            <h3>Trading automation pipeline</h3>
+                            <p>Built a multi-strategy validation harness: Sharpe / Profit Factor / DSR / PBO / FTMO Monte-Carlo. Honest gates only.</p>
+                        </div>
+                    </li>
+                    <li class="timeline-item left">
+                        <div class="timeline-content">
+                            <span class="timeline-date">2026</span>
+                            <h3>Final year project + this portfolio</h3>
+                            <p>Senior design + a production-grade portfolio with a session-protected admin dashboard. The thing you're reading right now.</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- §7 — CONTACT ─────────────────────────────────────────── -->
+        <section id="contact" class="section contact">
+            <div class="container">
+                <h2 class="section-title"><span class="prompt">&gt;</span> SEND_MESSAGE</h2>
+
+                <form id="contact-form" class="contact-form" novalidate>
+                    <input type="hidden" name="csrf_token" id="csrf-token" value="">
+
+                    <div class="form-row">
+                        <label for="name">name <span class="dim">/required</span></label>
+                        <input type="text" id="name" name="name" maxlength="100" autocomplete="name" required>
+                        <small class="error-msg" id="err-name"></small>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="email">email <span class="dim">/required</span></label>
+                        <input type="email" id="email" name="email" maxlength="255" autocomplete="email" required>
+                        <small class="error-msg" id="err-email"></small>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="subject">subject</label>
+                        <input type="text" id="subject" name="subject" maxlength="200">
+                        <small class="error-msg" id="err-subject"></small>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="message">message <span class="dim">/min 10 chars</span></label>
+                        <textarea id="message" name="message" rows="6" minlength="10" maxlength="2000" required></textarea>
+                        <small class="error-msg" id="err-message"></small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="contact-submit">
+                            transmit <span aria-hidden="true">→</span>
+                        </button>
+                        <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+                    </div>
+                </form>
+
+                <ul class="social-links" aria-label="Find me elsewhere">
+                    <li><a href="https://github.com/ahmedrahmani" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-1.93c-3.2.7-3.87-1.54-3.87-1.54-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.75 2.68 1.25 3.34.96.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.06.78 2.13v3.16c0 .31.21.67.8.55 4.56-1.52 7.85-5.83 7.85-10.91C23.5 5.65 18.35.5 12 .5z"/></svg>
+                        <span>GitHub</span>
+                    </a></li>
+                    <li><a href="https://www.linkedin.com/in/ahmedrahmani/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M19 0h-14C2.24 0 0 2.24 0 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5V5c0-2.76-2.24-5-5-5zM7.12 20.45H3.56V9h3.56v11.45zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM20.45 20.45h-3.55v-5.57c0-1.33-.03-3.05-1.86-3.05-1.86 0-2.15 1.45-2.15 2.95v5.67H9.34V9h3.41v1.56h.05c.48-.91 1.65-1.86 3.4-1.86 3.63 0 4.3 2.39 4.3 5.5v6.25h-.05z"/></svg>
+                        <span>LinkedIn</span>
+                    </a></li>
+                    <li><a href="mailto:hhhf45818@gmail.com" aria-label="Email">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        <span>hhhf45818@gmail.com</span>
+                    </a></li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         §8 — FOOTER
+         ════════════════════════════════════════════════════════════════ -->
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <p class="footer-brand"><span class="prompt">&gt;</span> AR_<span class="cursor" aria-hidden="true"></span></p>
+                <p class="footer-tag">Built with vibe coding + Claude AI &mdash; &copy; 2026 Ahmed Rahmani</p>
+                <p class="footer-meta">Student ID: <span class="mono">22091000408</span> &nbsp;·&nbsp; Halic University &nbsp;·&nbsp; Software Engineering Y4</p>
+            </div>
+            <nav class="footer-col" aria-label="Quick">
+                <h4>Quick nav</h4>
+                <ul>
+                    <li><a href="#hero">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#skills">Skills</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="admin/login.php">Admin</a></li>
+                </ul>
+            </nav>
+            <div class="footer-col">
+                <h4>Stack</h4>
+                <p class="footer-stack">HTML5 · CSS3 · JS · PHP · MySQL · PDO</p>
+                <p class="footer-stack">No framework. No build step. Just code.</p>
+            </div>
+        </div>
+        <button class="back-to-top" id="back-to-top" aria-label="Back to top">↑</button>
+    </footer>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         BONUS 3 — Terminal easter egg (bottom-right)
+         Try: help · whoami · projects · contact · clear
+         ════════════════════════════════════════════════════════════════ -->
+    <aside class="terminal-egg" id="terminal-egg" aria-label="Hidden terminal">
+        <button class="terminal-toggle" id="terminal-toggle" aria-label="Open terminal" title="Open terminal">&gt;_</button>
+        <div class="terminal-window" id="terminal-window" hidden>
+            <header class="terminal-bar">
+                <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+                <span class="terminal-title">ahmed@portfolio:~</span>
+                <button class="terminal-close" id="terminal-close" aria-label="Close terminal">×</button>
+            </header>
+            <div class="terminal-body" id="terminal-body">
+                <div class="terminal-line"><span class="prompt">&gt;</span> Welcome. Type <code>help</code> for commands.</div>
+            </div>
+            <form class="terminal-input-row" id="terminal-form">
+                <span class="prompt">&gt;</span>
+                <input type="text" id="terminal-input" autocomplete="off" spellcheck="false" aria-label="Terminal input">
+            </form>
+        </div>
+    </aside>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         BONUS 2 — Strategy visualizer modal (opened from a project card)
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="modal" id="strategy-modal" hidden role="dialog" aria-modal="true" aria-labelledby="strategy-modal-title">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 id="strategy-modal-title"><span class="prompt">&gt;</span> EURUSD MA Crossover · backtest 2019–2024</h3>
+                <button class="modal-close" data-modal-close aria-label="Close">×</button>
+            </header>
+            <div class="modal-body">
+                <canvas id="strategy-chart" width="640" height="280" aria-label="Equity curve"></canvas>
+                <ul class="strategy-stats">
+                    <li><span class="stat-label">Total return</span><span class="stat-num">+34.0%</span></li>
+                    <li><span class="stat-label">Sharpe</span>     <span class="stat-num">1.20</span></li>
+                    <li><span class="stat-label">Max DD</span>     <span class="stat-num">9.4%</span></li>
+                    <li><span class="stat-label">Trades</span>     <span class="stat-num">218</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden printable CV (Bonus 4) — populated visibility via @media print -->
+    <article class="print-cv" id="print-cv" aria-hidden="true">
+        <header>
+            <h1>Ahmed Rahmani</h1>
+            <p>Software Engineering · Halic University · Student ID 22091000408</p>
+            <p>hhhf45818@gmail.com · github.com/ahmedrahmani · linkedin.com/in/ahmedrahmani</p>
+        </header>
+        <section>
+            <h2>Profile</h2>
+            <p>4th-year SE student focused on full-stack web and quantitative trading. Comfortable across PHP, MySQL, JavaScript, Python.</p>
+        </section>
+        <section>
+            <h2>Skills</h2>
+            <p><strong>Frontend:</strong> HTML5, CSS3, JavaScript, React</p>
+            <p><strong>Backend:</strong> PHP, MySQL, Python, REST APIs</p>
+            <p><strong>Tools:</strong> Git, Docker, Linux, AI tooling (Claude, Copilot)</p>
+            <p><strong>Quant:</strong> QuantConnect / LEAN, Pandas, Pine Script, walk-forward backtesting</p>
+        </section>
+        <section>
+            <h2>Selected Projects</h2>
+            <ul>
+                <li><strong>Quant Portfolio Dashboard</strong> — full-stack PHP/MySQL portfolio with admin CRUD.</li>
+                <li><strong>Forex Signal Bot</strong> — QuantConnect EURUSD strategy, +34% / Sharpe 1.2 over 2019–2024.</li>
+                <li><strong>Trading Automation Dashboard</strong> — JS + Chart.js + WebSocket live FX visualizer.</li>
+            </ul>
+        </section>
+        <section>
+            <h2>Education</h2>
+            <p>Halic University — Software Engineering (BSc), 2022–2026.</p>
+        </section>
+    </article>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
