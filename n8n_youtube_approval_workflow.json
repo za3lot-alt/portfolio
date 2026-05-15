@@ -1,0 +1,1101 @@
+{
+  "name": "YouTube 3-Stage Approval Pipeline",
+  "nodes": [
+    {
+      "id": "f8d08505-bbbe-475f-86de-547a846a2ae5",
+      "name": "Notion Trigger",
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "event": "pageUpdated",
+        "databaseId": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "simple": false,
+        "conditions": {
+          "string": [
+            {
+              "key": "properties.Status.select.name",
+              "operation": "equals",
+              "value": "Submitted"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "56c9fbf1-4b5b-4129-960b-2c3107646aaa",
+      "name": "Telegram Node 2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        200,
+        0
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_2_CHAT_ID || '123456789'}}",
+        "text": "={{ 'New Video Submission:\\nTitle: ' + $json.properties.Title.title[0].plain_text + '\\nDescription: ' + $json.properties.Description.rich_text[0].plain_text + '\\nTags: ' + $json.properties.Tags.rich_text[0].plain_text + '\\nAd Copy: ' + $json.properties.Ad_Copy.rich_text[0].plain_text + '\\n\\nDrive Link: ' + $json.properties.Video_Drive_Link.url }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "\u2705 Approve",
+                    "url": "={{$execution.resumeUrl}}?action=approve"
+                  },
+                  {
+                    "text": "\u274c Reject",
+                    "url": "={{$execution.resumeUrl}}?action=reject"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "183fb5ac-ae0c-4447-943c-cb5993ac3130",
+      "name": "Wait Node 2",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        400,
+        0
+      ],
+      "parameters": {
+        "resume": "webhook",
+        "options": {}
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "b3fc9a1e-e229-4afb-aae3-9f12b0365a6d",
+      "name": "Switch Node 2",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        600,
+        0
+      ],
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.query.action}}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equals",
+              "value2": "approve"
+            },
+            {
+              "operation": "equals",
+              "value2": "reject"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "47b4bed9-049e-49df-8f04-b407d7364417",
+      "name": "Notion Reject 2",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        800,
+        200
+      ],
+      "parameters": {
+        "resource": "page",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Rejected"
+            },
+            {
+              "key": "Rejection notes|rich_text",
+              "textContent": "Rejected by Node 2"
+            },
+            {
+              "key": "Timestamps|date",
+              "date": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "0f45f4d3-0616-4a4d-a971-0fd0de5b03f8",
+      "name": "Telegram Reject Node 1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        200
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_1_CHAT_ID || '123456789'}}",
+        "text": "={{ 'Video Rejected by Node 2 (Owner): ' + $('Notion Trigger').item.json.properties.Title.title[0].plain_text }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "f6149687-f476-4ecb-b70b-5a2e740f220b",
+      "name": "Download Drive Video",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        800,
+        -100
+      ],
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').item.json.properties.Video_Drive_Link.url.split('/d/')[1].split('/')[0] }}",
+          "mode": "id"
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "ac8adab2-7012-4936-96b5-7bf96686d5d1",
+      "name": "Download Thumbnail",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1000,
+        -100
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Notion Trigger').item.json.properties.Thumbnail.files[0].file.url || $('Notion Trigger').item.json.properties.Thumbnail.url }}",
+        "responseFormat": "file",
+        "options": {}
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "332ace61-b66c-4459-83a7-61ee2a5543e0",
+      "name": "Upload to YouTube",
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -100
+      ],
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Notion Trigger').item.json.properties.Title.title[0].plain_text }}",
+        "description": "={{ $('Notion Trigger').item.json.properties.Description.rich_text[0].plain_text }}",
+        "privacyStatus": "unlisted"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "677dd5c7-8f77-45eb-bb28-2dcace4a2970",
+      "name": "Check Upload Error",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        -100
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error ? true : false }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "ef5e96f6-f2e8-468f-9fad-5423adc8896a",
+      "name": "Notion Upload Fail",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -300
+      ],
+      "parameters": {
+        "resource": "page",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Upload failed"
+            },
+            {
+              "key": "Rejection notes|rich_text",
+              "textContent": "={{ $json.error.message }}"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "5e369472-98ed-4e02-a060-3b8427c40b4b",
+      "name": "Telegram Upload Fail",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1800,
+        -300
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_2_CHAT_ID || '123456789'}}",
+        "text": "={{ '\ud83d\udea8 YouTube Upload Failed:\\n' + $('Upload to YouTube').item.json.error.message }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "32ff4847-0dae-4c8f-8e90-fd62a00e46df",
+      "name": "Set YouTube Thumbnail",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1600,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=' + $json.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "thumbnail",
+              "parameterType": "form-data-binary"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "dd534be1-8d00-451b-8d12-6c394f1e5d26",
+      "name": "Notion Update (Unlisted)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        100
+      ],
+      "parameters": {
+        "resource": "page",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Unlisted on YouTube"
+            },
+            {
+              "key": "YouTube Video ID|rich_text",
+              "textContent": "={{ $('Upload to YouTube').item.json.id }}"
+            },
+            {
+              "key": "YouTube Link|url",
+              "urlValue": "={{ 'https://youtu.be/' + $('Upload to YouTube').item.json.id }}"
+            },
+            {
+              "key": "Timestamps|date",
+              "date": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "e341f3fb-eea9-407c-91a1-37c581cffbae",
+      "name": "Telegram Node 1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        100
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_1_CHAT_ID || '123456789'}}",
+        "text": "={{ 'Unlisted Video Ready:\\nTitle: ' + $('Notion Trigger').item.json.properties.Title.title[0].plain_text + '\\nLink: https://youtu.be/' + $('Upload to YouTube').item.json.id }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "\u2705 Approve",
+                    "url": "={{$execution.resumeUrl}}?action=approve"
+                  },
+                  {
+                    "text": "\u274c Reject",
+                    "url": "={{$execution.resumeUrl}}?action=reject"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "bb7abb47-140d-4673-b5e8-0e4e3e9850e7",
+      "name": "Wait Node 1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        100
+      ],
+      "parameters": {
+        "resume": "webhook",
+        "options": {}
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "74c17b04-c84a-4933-aaad-2fee816fc2ad",
+      "name": "Switch Node 1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        100
+      ],
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.query.action}}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equals",
+              "value2": "approve"
+            },
+            {
+              "operation": "equals",
+              "value2": "reject"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "36edaebb-e6ad-493e-a7e3-7a3526edf81b",
+      "name": "Notion Reject 1",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        2600,
+        300
+      ],
+      "parameters": {
+        "resource": "page",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Rejected"
+            },
+            {
+              "key": "Rejection notes|rich_text",
+              "textContent": "Rejected by Node 1"
+            },
+            {
+              "key": "Timestamps|date",
+              "date": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "dbf7e26a-b5dd-4a1a-b16e-82f48fb9d3bd",
+      "name": "Telegram Reject Node 2 (from 1)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        300
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_2_CHAT_ID || '123456789'}}",
+        "text": "={{ 'Video Rejected by Node 1 (Editor): ' + $('Notion Trigger').item.json.properties.Title.title[0].plain_text }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "6fe1b20f-8bbb-4c90-abaf-c966e74a9cf7",
+      "name": "Notion Approve 1",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        2600,
+        -100
+      ],
+      "parameters": {
+        "resource": "page",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Approved by Node 1"
+            },
+            {
+              "key": "Timestamps|date",
+              "date": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "bc1f486f-40e7-4f35-a89f-2d7a2f09f02f",
+      "name": "Telegram Node 3",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        -100
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_3_CHAT_ID || '123456789'}}",
+        "text": "={{ 'Final Review:\\nTitle: ' + $('Notion Trigger').item.json.properties.Title.title[0].plain_text + '\\nLink: https://youtu.be/' + $('Upload to YouTube').item.json.id }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "\u2705 Approve & Publish",
+                    "url": "={{$execution.resumeUrl}}?action=approve"
+                  },
+                  {
+                    "text": "\u274c Reject",
+                    "url": "={{$execution.resumeUrl}}?action=reject"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "93579afe-5e4a-4aaa-ad41-b804ff3f048e",
+      "name": "Wait Node 3",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        3000,
+        -100
+      ],
+      "parameters": {
+        "resume": "webhook",
+        "options": {}
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "b71f9bcb-5c5d-4d98-95ef-150f829a64bb",
+      "name": "Switch Node 3",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        3200,
+        -100
+      ],
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.query.action}}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equals",
+              "value2": "approve"
+            },
+            {
+              "operation": "equals",
+              "value2": "reject"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "950d58d5-514e-4884-8bce-4f92203abbe8",
+      "name": "Notion Reject 3",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        3400,
+        100
+      ],
+      "parameters": {
+        "resource": "page",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Rejected"
+            },
+            {
+              "key": "Rejection notes|rich_text",
+              "textContent": "Rejected by Node 3"
+            },
+            {
+              "key": "Timestamps|date",
+              "date": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "ec12a09f-7dd6-4443-a868-e7c3b8bf25ad",
+      "name": "Telegram Reject Node 1 From 3",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3600,
+        100
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_1_CHAT_ID || '123456789'}}",
+        "text": "={{ 'Video Rejected by Node 3 (Publisher): ' + $('Notion Trigger').item.json.properties.Title.title[0].plain_text }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "801a39ab-40c6-4315-a87c-5b0119d911b7",
+      "name": "Publish YouTube Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3400,
+        -300
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "https://www.googleapis.com/youtube/v3/videos?part=status",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "={{ $('Upload to YouTube').item.json.id }}"
+            },
+            {
+              "name": "status",
+              "value": "={\n  \"privacyStatus\": \"public\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "0f6ebeb2-9e0b-499c-91a1-615a5d0696f1",
+      "name": "Check Publish Error",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        3600,
+        -300
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.error ? true : false }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "2608511f-013c-4a2e-9bbb-09bfb9d7d549",
+      "name": "Telegram Publish Fail",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3800,
+        -100
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_2_CHAT_ID || '123456789'}}",
+        "text": "={{ '\ud83d\udea8 YouTube Public Switch Failed:\\n' + $('Publish YouTube Video').item.json.error.message }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "e7029432-c053-4b47-903d-a8d85278b369",
+      "name": "Notion Published",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        3800,
+        -500
+      ],
+      "parameters": {
+        "resource": "page",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Status|select",
+              "selectValue": "Published"
+            },
+            {
+              "key": "Timestamps|date",
+              "date": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "b8d6f0b9-5980-456d-bd88-b00c0953dad9",
+      "name": "Telegram Final Node 1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        4000,
+        -700
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_1_CHAT_ID || '123456789'}}",
+        "text": "={{ '\ud83c\udf89 Video Published!\\nLink: https://youtu.be/' + $('Upload to YouTube').item.json.id }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "7784ba5a-2e80-4d1b-93b5-28666ad955db",
+      "name": "Telegram Final Node 2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        4000,
+        -500
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_2_CHAT_ID || '123456789'}}",
+        "text": "={{ '\ud83c\udf89 Video Published!\\nLink: https://youtu.be/' + $('Upload to YouTube').item.json.id }}"
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "5d9fba7c-db87-44da-89f9-754e2172495d",
+      "name": "Telegram Final Node 3",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        4000,
+        -300
+      ],
+      "parameters": {
+        "chatId": "={{$env.NODE_3_CHAT_ID || '123456789'}}",
+        "text": "={{ '\ud83c\udf89 Video Published!\\nLink: https://youtu.be/' + $('Upload to YouTube').item.json.id }}"
+      },
+      "onError": "stopWorkflow"
+    }
+  ],
+  "connections": {
+    "Notion Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telegram Node 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Node 2": {
+      "main": [
+        [
+          {
+            "node": "Wait Node 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Node 2": {
+      "main": [
+        [
+          {
+            "node": "Switch Node 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Node 2": {
+      "main": [
+        [
+          {
+            "node": "Download Drive Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notion Reject 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Reject 2": {
+      "main": [
+        [
+          {
+            "node": "Telegram Reject Node 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Drive Video": {
+      "main": [
+        [
+          {
+            "node": "Download Thumbnail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Thumbnail": {
+      "main": [
+        [
+          {
+            "node": "Upload to YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to YouTube": {
+      "main": [
+        [
+          {
+            "node": "Check Upload Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Upload Error": {
+      "main": [
+        [
+          {
+            "node": "Notion Upload Fail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set YouTube Thumbnail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Upload Fail": {
+      "main": [
+        [
+          {
+            "node": "Telegram Upload Fail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set YouTube Thumbnail": {
+      "main": [
+        [
+          {
+            "node": "Notion Update (Unlisted)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Update (Unlisted)": {
+      "main": [
+        [
+          {
+            "node": "Telegram Node 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Node 1": {
+      "main": [
+        [
+          {
+            "node": "Wait Node 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Node 1": {
+      "main": [
+        [
+          {
+            "node": "Switch Node 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Node 1": {
+      "main": [
+        [
+          {
+            "node": "Notion Approve 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notion Reject 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Reject 1": {
+      "main": [
+        [
+          {
+            "node": "Telegram Reject Node 2 (from 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Approve 1": {
+      "main": [
+        [
+          {
+            "node": "Telegram Node 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Node 3": {
+      "main": [
+        [
+          {
+            "node": "Wait Node 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Node 3": {
+      "main": [
+        [
+          {
+            "node": "Switch Node 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Node 3": {
+      "main": [
+        [
+          {
+            "node": "Publish YouTube Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notion Reject 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Reject 3": {
+      "main": [
+        [
+          {
+            "node": "Telegram Reject Node 1 From 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish YouTube Video": {
+      "main": [
+        [
+          {
+            "node": "Check Publish Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Publish Error": {
+      "main": [
+        [
+          {
+            "node": "Telegram Publish Fail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notion Published",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion Published": {
+      "main": [
+        [
+          {
+            "node": "Telegram Final Node 1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telegram Final Node 2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telegram Final Node 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1.0"
+}
